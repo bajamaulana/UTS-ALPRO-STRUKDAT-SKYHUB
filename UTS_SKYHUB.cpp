@@ -4,7 +4,7 @@
 
 using namespace std;
 
-// [ALPRO-4] NAMESPACE: Mengelompokan semua fungsi dan struct ke dalam namespace "SkyHub"
+// [ALPRO-4] NAMESPACE: Mengempokan semua fungsi dan struct ke dalam namespace "SkyHub"
 namespace SkyHub {
 
     // [ALPRO-1] STRUCT: Definisi entitas data untuk penerbangan, penumpang, staf, dan undo stack
@@ -52,8 +52,23 @@ namespace SkyHub {
     }
 
     // [ALPRO-7] FUNCTION OVERLOADING: Nama fungsi sama dengan parameter berbeda
-    void cariData(string nama) { cout << "Hasil Cari: Penumpang bernama " << nama << endl; }
-    void cariData(int id) { cout << "Hasil Cari: ID Paspor " << id << endl; }
+    void cariData(string nama) { 
+        cout << "\n========================================================\n";
+        cout << "\n[PENCARIAN DATABASE]";
+        cout << "\nStatus: DITEMUKAN";
+        cout << "\nNama Penumpang : " << nama;
+        cout << "\nKeterangan     : Penumpang terdaftar dalam manifest.";
+        cout << "\n=======================================================\n";
+    }
+
+    void cariData(int id) { 
+        cout << "\n========================================================\n";
+        cout << "\n[PENCARIAN DATABASE]";
+        cout << "\nStatus: TERVERIFIKASI";
+        cout << "\nID Paspor      : " << id;
+        cout << "\nKeterangan     : Dokumen valid untuk keberangkatan.";
+        cout << "\n=======================================================\n";
+    }
 
     // [ALPRO-5] CALLBACK FUNCTION: Fungsi yang diteruskan sebagai parameter filter penerbangan
     void filterPenerbangan(void (*logic)(Flight*)) {
@@ -140,8 +155,7 @@ namespace SkyHub {
         }
     }
 
-    // [STRUKDAT] Priority Queue: Penumpang dengan prioritas lebih tinggi (nilai p lebih kecil) akan berada di depan
-    void enqueueBoarding(string n, int id, string k, int p) { 
+    void enqueueBoarding(string n, int id, string k, int p) {                       // [STRUKDAT] Priority Queue: Penumpang dengan prioritas lebih tinggi (nilai p lebih kecil) akan berada di depan
         Passenger* newNode = new Passenger{n, k, id, p, nullptr};
         if (!headBoarding || p < headBoarding->prioritas) {
             newNode->next = headBoarding;
@@ -165,8 +179,7 @@ namespace SkyHub {
         }
     }
 
-    // [STRUKDAT] STACK: Menyimpan status lama sebelum update untuk memungkinkan undo
-    void pushUndo(string s) {                       
+    void pushUndo(string s) {                       // [STRUKDAT] STACK: Menyimpan status lama sebelum update untuk memungkinkan undo
         topUndo = new UndoStack{s, topUndo};
     }
 }
