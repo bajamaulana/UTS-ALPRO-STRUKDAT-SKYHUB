@@ -4,7 +4,7 @@
 
 using namespace std;
 
-// [ALPRO-4] NAMESPACE: Mengempokan semua fungsi dan struct ke dalam namespace "SkyHub"
+// [ALPRO-4] NAMESPACE: Mengelompokan semua fungsi dan struct ke dalam namespace "SkyHub"
 namespace SkyHub {
 
     // [ALPRO-1] STRUCT: Definisi entitas data untuk penerbangan, penumpang, staf, dan undo stack
@@ -140,7 +140,8 @@ namespace SkyHub {
         }
     }
 
-    void enqueueBoarding(string n, int id, string k, int p) {                       // [STRUKDAT] Priority Queue: Penumpang dengan prioritas lebih tinggi (nilai p lebih kecil) akan berada di depan
+    // [STRUKDAT] Priority Queue: Penumpang dengan prioritas lebih tinggi (nilai p lebih kecil) akan berada di depan
+    void enqueueBoarding(string n, int id, string k, int p) { 
         Passenger* newNode = new Passenger{n, k, id, p, nullptr};
         if (!headBoarding || p < headBoarding->prioritas) {
             newNode->next = headBoarding;
@@ -164,7 +165,8 @@ namespace SkyHub {
         }
     }
 
-    void pushUndo(string s) {                       // [STRUKDAT] STACK: Menyimpan status lama sebelum update untuk memungkinkan undo
+    // [STRUKDAT] STACK: Menyimpan status lama sebelum update untuk memungkinkan undo
+    void pushUndo(string s) {                       
         topUndo = new UndoStack{s, topUndo};
     }
 }
