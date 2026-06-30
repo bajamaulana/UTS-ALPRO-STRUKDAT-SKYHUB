@@ -1,0 +1,2 @@
+EF932,JPN,16.00
+B064,Bandara_Changi_Singapore,12.00

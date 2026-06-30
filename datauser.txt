@@ -1,0 +1,7 @@
+baja,baja123,Maskapai
+ryu,ryu123,Bandara
+admin,admin123,Bandara
+ryu,ryu123,Maskapai
+budi,budi123,gurugimang,gimang123,Bandara
+baja maulana,baja maulana123,Maskapai
+andi baik,andibaik123,Maskapai
