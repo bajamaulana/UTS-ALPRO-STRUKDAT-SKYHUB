@@ -595,10 +595,15 @@ namespace SkyHub {
 
     // fungsi login user (Maskapai/Bandara) dengan validasi dari file eksternal
     string loginuser() {
-        fstream file("datauser.txt");
-        string username, password, role;
-        cout << "Masukkan Username: "; cin >> username;
-        cout << "Masukkan Password: "; cin >> password;
+        ifstream file("datauser.txt");
+        if (!file.is_open()) {
+            cout << "[FILE ERROR] datauser.txt tidak ditemukan.\n";
+            return "";
+        }
+        string username, password;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Bersihkan sisa newline
+        cout << "Masukkan Username: "; getline(cin, username);
+        cout << "Masukkan Password: "; getline(cin, password);
         string line;
         while (getline(file, line)) {
             stringstream ss(line);
@@ -620,25 +625,27 @@ namespace SkyHub {
 
     void daftarUserBaru() {
         string username, password, role;
-        cout << "Masukkan Username Baru: "; cin >> username;
-        cout << "Masukkan Password Baru: "; cin >> password;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Bersihkan sisa newline
+        cout << "Masukkan Username Baru: "; getline(cin, username);
+        cout << "Masukkan Password Baru: "; getline(cin, password);
         cout << "Masukkan Role (Maskapai/Bandara): "; cin >> role;
 
         ifstream fileCheck("datauser.txt");
-        // Memeriksa apakah username sudah ada
         string line;
         bool usernameExists = false;
-        while (getline(fileCheck, line)) {
-            stringstream ss(line);
-            string fileUsername, filePassword, fileRole;
-            if (getline(ss, fileUsername, ',') && getline(ss, filePassword, ',') && getline(ss, fileRole, ',')) {
-                if (fileUsername == username) {
-                    usernameExists = true;
-                    break;
+        if(fileCheck.is_open()) {
+            while (getline(fileCheck, line)) {
+                stringstream ss(line);
+                string fileUsername, filePassword, fileRole;
+                if (getline(ss, fileUsername, ',') && getline(ss, filePassword, ',') && getline(ss, fileRole, ',')) {
+                    if (fileUsername == username) {
+                        usernameExists = true;
+                        break;
+                    }
                 }
             }
+            fileCheck.close();
         }
-        fileCheck.close();
 
         if (usernameExists) {
             cout << "Username sudah digunakan! Silakan pilih username lain.\n";
@@ -657,11 +664,11 @@ namespace SkyHub {
 
 
     // fungsi validasi input menu dengan try-catch untuk menangani kesalahan input
-    int dapatkanPilihanMenu() {
+    int dapatkanPilihanMenu(int jmlhmenu) {
     int pilihan = -1;
 
     while (true) {
-        std::cout << "Pilih menu [1/2/0]: ";
+        std::cout << "Pilih menu" << " (0-" << jmlhmenu << "): ";
         
         try {
             // 1. Cek apakah input stream gagal (misal kemasukan huruf)
@@ -673,8 +680,8 @@ namespace SkyHub {
             }
 
             // 2. Cek apakah angka yang dimasukkan ada di dalam menu
-            if (pilihan != 1 && pilihan != 2 && pilihan != 0) {
-                throw std::out_of_range("Nomor menu tidak tersedia! Silakan pilih angka 1, 2, atau 0.");
+            if (pilihan < 0 || pilihan > jmlhmenu) {
+                throw std::out_of_range("Nomor menu tidak tersedia! Silakan pilih angka 0 hingga " + std::to_string(jmlhmenu) + ".");
             }
 
             // Jika berhasil lolos dari kedua throw di atas, kembalikan nilai pilihan
@@ -704,7 +711,7 @@ namespace SkyHub {
 int main() {
     int loginChoice, pilihanMenu, subMenu;
     string kode, kota, paspor, nama, pnr, detailGerbang, jamTerbang; // jamTerbang sukses diubah ke string
-    
+    int jmlhmenu;
     // Panggil fungsi Master File Handling
     SkyHub::loadSemuaData();
 
@@ -717,8 +724,9 @@ int main() {
         cout << "2. Daftar User Baru\n";
         cout << "0. Keluar Program\n";
         cout << "Pilihan Anda: ";
-        loginChoice = SkyHub::dapatkanPilihanMenu(); // Panggil fungsi validasi input menu
-        
+        jmlhmenu = 2; // Jumlah menu login
+        loginChoice = SkyHub::dapatkanPilihanMenu(jmlhmenu); // Panggil fungsi validasi input menu
+
         if (loginChoice == 1){
             string roleAccess = SkyHub::loginuser();
             if (roleAccess.empty()) {
@@ -739,26 +747,8 @@ int main() {
                     cout << "\nPilihan Operasi Maskapai: ";
                 
                     // Validasi Input Menu Maskapai
-                    try {
-                        if (!(cin >> pilihanMenu)) {
-                            cin.clear();
-                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                            throw invalid_argument("Input harus berupa angka! Huruf atau simbol tidak diperbolehkan.");
-                        }
-                        if (pilihanMenu < 0 || pilihanMenu > 5) {
-                            throw out_of_range("Nomor menu tidak tersedia! Silakan pilih angka 0 hingga 5.");
-                        }
-                    } catch (const invalid_argument& e) {
-                        cerr << "\n[ERROR INPUT]: " << e.what() << "\n";
-                        continue;
-                    } catch (const out_of_range& e) {
-                        cerr << "\n[ERROR MENU]: " << e.what() << "\n";
-                        continue;
-                    } catch (const exception& e) {
-                        cerr << "\n[ERROR SISTEM]: " << e.what() << "\n";
-                        continue;
-                    }
-                    cout << endl;
+                    jmlhmenu = 5; // Jumlah menu maskapai
+                    pilihanMenu = SkyHub::dapatkanPilihanMenu(jmlhmenu);
 
                     switch (pilihanMenu) {
                         case 1:
@@ -837,7 +827,11 @@ int main() {
                             SkyHub :: cetakDataPassenggerInOrder(SkyHub::rootPassengerAVL);
                             cout << "Masukkan Nomor Paspor Penumpang untuk Dihapus: "; cin >> paspor;
                             SkyHub::rootPassengerAVL = SkyHub::deletePassenger(SkyHub::rootPassengerAVL, paspor);
-                            cout << "[AVL TREE DELETE] Proses penghapusan selesai dijalankan.\n";
+                            if (SkyHub::searchPassenger(SkyHub::rootPassengerAVL, paspor) == nullptr) {
+                                cout << "Paspor " << paspor << " berhasil dihapus dari sistem.\n";
+                            } else {
+                                cout << "Paspor " << paspor << " tidak ditemukan dalam sistem.\n";
+                            }
                             SkyHub::pushUndoLog("Menghapus paspor " + paspor);
                             break;
                     }
@@ -860,27 +854,9 @@ int main() {
                     cout << "\n0. logout Portal";
                     cout << "\nPilihan Operasi Bandara: ";
 
-                // validasi input menu dengan try-catch untuk menangani kesalahan input
-                    try {
-                        if (!(cin >> pilihanMenu)) {
-                            cin.clear();
-                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                            throw invalid_argument("Input harus berupa angka! Huruf atau simbol tidak diperbolehkan.");
-                        }
-                        if (pilihanMenu < 0 || pilihanMenu > 8) {
-                            throw out_of_range("Nomor menu tidak tersedia! Silakan pilih angka 0 hingga 8.");
-                        }
-                    } catch (const invalid_argument& e) {
-                        cerr << "\n[ERROR INPUT]: " << e.what() << "\n";
-                        continue;
-                    } catch (const out_of_range& e) {
-                        cerr << "\n[ERROR MENU]: " << e.what() << "\n";
-                        continue;
-                    } catch (const exception& e) {
-                        cerr << "\n[ERROR SISTEM]: " << e.what() << "\n";
-                        continue;
-                    }
-                    cout << endl;
+                    // Validasi Input Menu Bandara
+                    jmlhmenu = 8; // Jumlah menu bandara
+                    pilihanMenu = SkyHub::dapatkanPilihanMenu(jmlhmenu);
 
                     switch (pilihanMenu) {
                         case 1:
@@ -953,7 +929,10 @@ int main() {
                             });
                             
                             cout << "\n--- Urutan Riwayat Keberangkatan (A-Z): ---\n";
-                            for(const auto& m : SkyHub::arsipKeberangkatan) cout << " -> " << m << "\n";
+                            vector<string>::iterator it;
+                            for (it = SkyHub::arsipKeberangkatan.begin(); it != SkyHub::arsipKeberangkatan.end(); ++it) {
+                            cout << " -> " << *it << "\n";
+                            }
                             
                             string keyword;
                             cout << "\nMasukkan tipe riwayat yang ingin dihitung (Reguler/Prioritas/Darurat): "; 
